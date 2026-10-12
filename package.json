@@ -6,7 +6,8 @@
     "test:unit": "node --test tests/unit/*.test.mjs",
     "test:e2e": "node scripts/make-samples.mjs && xvfb-run -a node tests/e2e/e2e.mjs",
     "test": "npm run test:unit && npm run test:e2e",
-    "build": "bash scripts/build.sh"
+    "build": "bash scripts/build.sh",
+    "test:coverage": "mkdir -p coverage && node --test --experimental-test-coverage --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info tests/unit/*.test.mjs"
   },
   "keywords": [],
   "author": "",

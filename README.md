@@ -57,3 +57,16 @@ Build store zip: `npm run build` → `dist/InvoiceExt.zip`.
 - DOCX output positions values with text frames using Arial; renderers vary slightly from the PDF (which uses DejaVu Sans).
 - Invoice counters are per template. No e-invoice/IRN/QR, no cess/TCS/reverse-charge, no multi-currency.
 - Vendored PDF.js is Apache-2.0 (others MIT/BSD); see NOTICE.
+
+## SonarCloud setup
+
+Code quality and coverage are analysed by SonarCloud via `.github/workflows/sonarcloud.yml`
+(runs on pushes to `main` and on pull requests).
+
+1. Sign in to [sonarcloud.io](https://sonarcloud.io) with GitHub and import this repository into the `dhanushprince` organization.
+2. In the project: **Administration → Analysis Method** → turn **off Automatic Analysis** (CI-based analysis is used).
+3. Generate a token (**My Account → Security**) and add it as the GitHub repository secret `SONAR_TOKEN`
+   (**Settings → Secrets and variables → Actions**).
+4. Confirm `sonar.organization` and `sonar.projectKey` in `sonar-project.properties` match the SonarCloud project.
+
+Locally, `npm run test:coverage` runs the unit tests and writes `coverage/lcov.info`.

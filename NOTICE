@@ -1,0 +1,14 @@
+Invoice Template Filler — third-party components (all vendored in extension/vendor or extension/fonts, loaded locally; no network use)
+
+1. PDF.js (pdfjs-dist 3.11.174) — Apache License 2.0 — Copyright Mozilla Foundation
+   Files: extension/vendor/pdf.min.js, extension/vendor/pdf.worker.min.js — License: extension/vendor/licenses/pdfjs-LICENSE.txt
+   (Note: PDF.js is Apache-2.0, not MIT; Apache-2.0 permits commercial redistribution with this notice.)
+2. mammoth.js 1.13.0 — BSD 2-Clause — Copyright Michael Williamson
+   File: extension/vendor/mammoth.browser.min.js — License: extension/vendor/licenses/mammoth-LICENSE.txt
+3. pdf-lib 1.17.1 — MIT — Copyright Andrew Dillon
+   File: extension/vendor/pdf-lib.min.js — License: extension/vendor/licenses/pdf-lib-LICENSE.md
+4. @pdf-lib/fontkit 1.1.1 — MIT — Copyright Devon Govett / Andrew Dillon
+   File: extension/vendor/fontkit.umd.min.js — License: extension/vendor/licenses/fontkit-LICENSE.txt
+5. DejaVu Sans fonts — Bitstream Vera / DejaVu free license (public domain changes)
+   Files: extension/fonts/DejaVuSans*.ttf — License: extension/fonts/DejaVu-LICENSE.txt
+DOCX writer and ZIP writer (extension/lib/docx.js, zip.js) are original code.

@@ -1,0 +1,12 @@
+{
+  "manifest_version": 3,
+  "name": "Invoice Template Filler",
+  "short_name": "Invoice Filler",
+  "version": "0.1.0",
+  "description": "Turn your own PDF/DOCX invoice into a reusable template. Fill GST invoices and export PDF & DOCX — 100% on-device.",
+  "action": { "default_title": "Open Invoice Template Filler", "default_icon": { "16": "icons/icon16.png", "32": "icons/icon32.png" } },
+  "icons": { "16": "icons/icon16.png", "48": "icons/icon48.png", "128": "icons/icon128.png" },
+  "background": { "service_worker": "background.js" },
+  "permissions": [],
+  "content_security_policy": { "extension_pages": "script-src 'self'; object-src 'self'" }
+}

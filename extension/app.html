@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Invoice Template Filler</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="icons/icon32.png"><link rel="stylesheet" href="app.css">
+<script src="vendor/pdf.min.js"></script><script src="vendor/mammoth.browser.min.js"></script>
+<script src="vendor/pdf-lib.min.js"></script><script src="vendor/fontkit.umd.min.js"></script>
+<script type="module" src="app.js"></script></head>
+<body>
+<aside class="nav">
+  <div class="brand"><img src="icons/icon48.png" alt=""><span id="appName"></span></div>
+  <button data-view="templates" class="active">Templates</button>
+  <button data-view="editor">Mark fields</button>
+  <button data-view="fill">New invoice</button>
+  <button data-view="history">History</button>
+  <button data-view="clients">Clients</button>
+  <div class="foot">100% on-device · no cloud</div>
+</aside>
+<main>
+<!-- TEMPLATES -->
+<section id="view-templates" class="view active">
+  <h1>Templates</h1>
+  <div class="card upload">
+    <h2>New template from your invoice</h2>
+    <p class="muted">Upload a sample invoice (PDF or DOCX) and your logo. You'll mark the fields once and reuse it forever.</p>
+    <div class="grid3">
+      <label>Template name<input id="tplName" placeholder="e.g. My GST invoice"></label>
+      <label>Sample invoice (PDF / DOCX)<input id="tplFile" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"></label>
+      <label>Logo (PNG / JPG / SVG, optional)<input id="tplLogo" type="file" accept=".png,.jpg,.jpeg,.svg,image/png,image/jpeg,image/svg+xml"></label>
+    </div>
+    <button id="importBtn" class="primary">Import &amp; mark fields →</button> <span id="importStatus" class="muted"></span>
+  </div>
+  <div id="tplList" class="tiles"></div>
+</section>
+<!-- EDITOR -->
+<section id="view-editor" class="view">
+  <div class="bar"><h1 id="edTitle">Mark fields</h1>
+    <label class="inline">Field to draw <select id="edType"></select></label>
+    <span class="pager"><button id="edPrev">‹</button><span id="edPageNo">1/1</span><button id="edNext">›</button></span>
+    <label class="inline">Zoom <input id="edZoom" type="range" min="0.6" max="2" step="0.1" value="1.2"></label>
+    <button id="edSave" class="primary">Save template</button></div>
+  <p class="muted">Drag a rectangle over the page. A box over existing sample text covers it (white-out) and draws your value in its place.</p>
+  <div class="split">
+    <div class="pagewrap"><div id="edPage" class="page"><img id="edImg" alt="template page"><div id="edOverlay" class="overlay"></div></div></div>
+    <div class="side">
+      <div class="card"><h3>Marked fields <span id="edCount" class="pill">0</span></h3><div id="edRects"></div></div>
+      <div class="card"><h3>Seller profile (defaults)</h3>
+        <label>Business name<input id="sName"></label>
+        <label>Address<textarea id="sAddr" rows="3"></textarea></label>
+        <label>GSTIN<input id="sGstin" maxlength="15"><small id="sGstinMsg"></small></label>
+        <label>State<select id="sState" class="stateSel"></select></label>
+        <label>Invoice number pattern<input id="sPattern" value="INV/{FY}/{SEQ:4}"><small>Tokens: {FY} {FYS} {YYYY} {YY} {MM} {SEQ:4}</small></label>
+        <label>Default GST %<select id="sGst"><option>0</option><option>5</option><option>12</option><option selected>18</option><option>28</option></select></label>
+        <label>Due in (days)<input id="sDue" type="number" value="15"></label>
+        <label>Replace logo<input id="sLogo" type="file" accept=".png,.jpg,.jpeg,.svg"></label>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- FILL -->
+<section id="view-fill" class="view">
+  <div class="bar"><h1>New invoice</h1><label class="inline">Template <select id="fTpl"></select></label>
+    <button id="fPdf" class="primary">Save &amp; download PDF</button><button id="fDocx">Save &amp; download DOCX</button><button id="fReset">New blank</button></div>
+  <div class="split">
+    <div class="formcol">
+      <div class="card"><h3>Invoice</h3><div class="grid2">
+        <label>Invoice no.<input id="f_invoice_no"></label><label>Date<input id="f_date" type="date"></label>
+        <label>Due date<input id="f_due_date" type="date"></label>
+        <label>Place of supply<select id="fPos" class="stateSel"></select></label></div>
+        <label class="chk"><input type="checkbox" id="fRound"> Round total to nearest rupee</label>
+      </div>
+      <div class="card"><h3>Seller</h3><div class="grid2">
+        <label>Name<input id="f_seller_name"></label><label>GSTIN<input id="f_seller_gstin" maxlength="15"><small id="m_seller_gstin"></small></label></div>
+        <label>Address<textarea id="f_seller_address" rows="2"></textarea></label>
+        <label>Seller state<select id="fSellerState" class="stateSel"></select></label></div>
+      <div class="card"><h3>Client <select id="fClientPick"><option value="">— saved clients —</option></select> <button id="fSaveClient" class="small">Save client</button></h3>
+        <div class="grid2"><label>Name<input id="f_client_name"></label><label>GSTIN<input id="f_client_gstin" maxlength="15"><small id="m_client_gstin"></small></label></div>
+        <label>Address<textarea id="f_client_address" rows="2"></textarea></label></div>
+      <div class="card"><h3>Line items</h3>
+        <table class="items"><thead><tr><th>Description</th><th>HSN/SAC</th><th>Qty</th><th>Rate</th><th>GST %</th><th class="r">Amount</th><th></th></tr></thead><tbody id="fItems"></tbody></table>
+        <button id="fAddItem" class="small">+ Add item</button>
+        <div id="fTotals" class="totals"></div></div>
+      <div class="card"><h3>Notes &amp; custom</h3><label>Notes<textarea id="f_notes" rows="2"></textarea></label><div id="fCustom"></div>
+        <p id="fMissing" class="muted"></p></div>
+    </div>
+    <div class="previewcol"><div class="card"><h3>Live preview <span id="fPv" class="muted"></span></h3><div id="fPreview"></div></div></div>
+  </div>
+</section>
+<!-- HISTORY -->
+<section id="view-history" class="view"><h1>Invoice history</h1>
+  <table class="list"><thead><tr><th>No.</th><th>Date</th><th>Client</th><th class="r">Total</th><th>Template</th><th></th></tr></thead><tbody id="hList"></tbody></table></section>
+<!-- CLIENTS -->
+<section id="view-clients" class="view"><h1>Clients</h1>
+  <table class="list"><thead><tr><th>Name</th><th>GSTIN</th><th>State</th><th>Address</th><th></th></tr></thead><tbody id="cList"></tbody></table></section>
+</main>
+<div id="toast"></div>
+</body></html>

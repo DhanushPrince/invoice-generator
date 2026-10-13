@@ -5,7 +5,9 @@ import { mkdtempSync, mkdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import assert from 'node:assert/strict';
-import { gstinCheckChar } from '../../extension/lib/gst.js';
+import { gstinCheckChar, financialYear } from '../../extension/lib/gst.js';
+// Invoice numbers are generated from today's date, so expectations use the current Indian FY (April-March).
+const FY = financialYear(new Date()), FYS = FY.slice(2, 4) + FY.slice(5);
 
 const root = path.resolve(new URL('../..', import.meta.url).pathname), ext = path.join(root, 'extension');
 const fx = (f) => path.join(root, 'tests/fixtures', f), VER = path.join(root, 'verify'), OUT = path.join(root, 'tests/out');
@@ -59,7 +61,7 @@ try {
     await page.click('#edSave'); await page.waitForSelector('#view-fill.active');
   });
   await step('fill form: inter-state → IGST, auto number, words', async () => {
-    assert.equal(await page.inputValue('#f_invoice_no'), 'INV/2026-27/0001');
+    assert.equal(await page.inputValue('#f_invoice_no'), `INV/${FY}/0001`);
     await page.fill('#f_client_name', 'Bengaluru Robotics LLP'); await page.fill('#f_client_address', 'HSR Layout, Bengaluru 560102');
     await page.fill('#f_client_gstin', 'BADGSTIN'); assert.match(await page.textContent('#m_client_gstin'), /15/);
     await page.fill('#f_client_gstin', CLIENT_GSTIN.slice(0, 14) + (CLIENT_GSTIN[14] === 'A' ? 'B' : 'A')); assert.match(await page.textContent('#m_client_gstin'), /Checksum/);
@@ -81,7 +83,7 @@ try {
   await step('export PDF and verify text with pdftotext', async () => {
     pdf1 = await save('#fPdf', 'pdf-template.pdf');
     const txt = execFileSync('pdftotext', ['-layout', pdf1, '-'], { encoding: 'utf8' });
-    for (const s of ['INV/2026-27/0001', 'Prince Digital Services', 'Bengaluru Robotics LLP', CLIENT_GSTIN, 'Website development', '998314', '1,25,000.00', '₹24,299.82', '₹1,59,298.82', 'Karnataka (29)', 'Rupees One Lakh Fifty Nine Thousand', 'Payment via UPI'])
+    for (const s of [`INV/${FY}/0001`, 'Prince Digital Services', 'Bengaluru Robotics LLP', CLIENT_GSTIN, 'Website development', '998314', '1,25,000.00', '₹24,299.82', '₹1,59,298.82', 'Karnataka (29)', 'Rupees One Lakh Fifty Nine Thousand', 'Payment via UPI'])
       assert.ok(txt.includes(s), 'PDF missing: ' + s + '\n' + txt);
     assert.ok(!txt.includes('SAMPLE-0001') && !txt.includes('Old Client Name'), 'sample text should be raster/covered');
     execFileSync('pdftoppm', ['-png', '-r', '110', '-singlefile', pdf1, path.join(VER, '04-output-pdf-page')]);
@@ -89,7 +91,7 @@ try {
   await step('export DOCX and verify document.xml via unzip', async () => {
     docx1 = await save('#fDocx', 'pdf-template.docx');
     const xml = execFileSync('unzip', ['-p', docx1, 'word/document.xml'], { encoding: 'utf8' });
-    for (const s of ['INV/2026-27/0001', 'Bengaluru Robotics LLP', 'Website development', '₹1,59,298.82']) assert.ok(xml.includes(s), 'DOCX missing ' + s);
+    for (const s of [`INV/${FY}/0001`, 'Bengaluru Robotics LLP', 'Website development', '₹1,59,298.82']) assert.ok(xml.includes(s), 'DOCX missing ' + s);
     assert.ok(execFileSync('unzip', ['-l', docx1], { encoding: 'utf8' }).includes('word/media/bg1.png'));
   });
   await step('import sample DOCX template, mark, intra-state CGST+SGST, export both', async () => {
@@ -99,28 +101,28 @@ try {
       ['line_items', 50, 230, 495, 120], ['cgst', 360, 380, 180, 16], ['sgst', 360, 398, 180, 16], ['total', 360, 418, 180, 18], ['amount_words', 50, 450, 495, 30]]);
     await page.fill('#sName', 'Docx Seller Co'); await page.fill('#sGstin', SELLER_GSTIN); await page.fill('#sPattern', 'DX/{FYS}/{SEQ:3}');
     await page.click('#edSave'); await page.waitForSelector('#view-fill.active');
-    assert.equal(await page.inputValue('#f_invoice_no'), 'DX/2627/001');
+    assert.equal(await page.inputValue('#f_invoice_no'), `DX/${FYS}/001`);
     await page.selectOption('#fClientPick', { label: 'Bengaluru Robotics LLP' });
     await page.fill('#f_client_gstin', g('33ZZZZZ9999Z1Z')); await page.fill('#f_client_name', 'Chennai Local Client');
     const r0 = page.locator('#fItems tr').nth(0);
     await r0.locator('[data-k=description]').fill('Consulting'); await r0.locator('[data-k=qty]').fill('3'); await r0.locator('[data-k=rate]').fill('333.33');
     const tot = await page.textContent('#fTotals'); assert.match(tot, /CGST₹90\.00/); assert.match(tot, /SGST₹90\.00/); assert.match(tot, /Total₹1,179\.99/);
     const p = await save('#fPdf', 'docx-template.pdf'), txt = execFileSync('pdftotext', [p, '-'], { encoding: 'utf8' });
-    for (const s of ['DX/2627/001', 'Docx Seller Co', 'Chennai Local Client', 'Consulting', '₹90.00', '₹1,179.99']) assert.ok(txt.includes(s), 'PDF missing ' + s);
+    for (const s of [`DX/${FYS}/001`, 'Docx Seller Co', 'Chennai Local Client', 'Consulting', '₹90.00', '₹1,179.99']) assert.ok(txt.includes(s), 'PDF missing ' + s);
     const d = await save('#fDocx', 'docx-template.docx'), xml = execFileSync('unzip', ['-p', d, 'word/document.xml'], { encoding: 'utf8' });
-    for (const s of ['DX/2627/001', 'Chennai Local Client', 'Rupees One Thousand One Hundred Seventy Nine and Ninety Nine Paise Only']) assert.ok(xml.includes(s), 'DOCX missing ' + s);
+    for (const s of [`DX/${FYS}/001`, 'Chennai Local Client', 'Rupees One Thousand One Hundred Seventy Nine and Ninety Nine Paise Only']) assert.ok(xml.includes(s), 'DOCX missing ' + s);
     execFileSync('pdftoppm', ['-png', '-r', '110', '-singlefile', p, path.join(VER, '06-output-docx-template-pdf')]);
   });
   await step('history: list, re-download, duplicate increments number', async () => {
     await page.click('button[data-view=history]');
     await page.waitForFunction(() => document.querySelectorAll('#hList tr').length === 2 && !document.querySelector('#hList .empty'));
     await page.screenshot({ path: path.join(VER, '07-history.png') });
-    const row = page.locator('#hList tr', { hasText: 'INV/2026-27/0001' });
+    const row = page.locator('#hList tr', { hasText: `INV/${FY}/0001` });
     const [d] = await Promise.all([page.waitForEvent('download'), row.locator('button', { hasText: 'PDF' }).click()]);
     const p = path.join(OUT, 'redownload.pdf'); await d.saveAs(p);
     assert.ok(execFileSync('pdftotext', [p, '-'], { encoding: 'utf8' }).includes('Bengaluru Robotics LLP'));
     await row.locator('button', { hasText: 'Duplicate' }).click(); await page.waitForSelector('#view-fill.active');
-    assert.equal(await page.inputValue('#f_invoice_no'), 'INV/2026-27/0002');
+    assert.equal(await page.inputValue('#f_invoice_no'), `INV/${FY}/0002`);
     assert.equal(await page.inputValue('#f_client_name'), 'Bengaluru Robotics LLP');
   });
   await step('persistence: templates + clients survive reload', async () => {

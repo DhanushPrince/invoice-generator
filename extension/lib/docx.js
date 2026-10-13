@@ -1,7 +1,8 @@
 // Builds a DOCX: each page = full-bleed background PNG (template + white-outs + logo baked in,
 // anchored behind text) + every value as an absolutely positioned text frame (w:framePr). Values stay editable text.
 import { makeZip } from './zip.js';
-const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+// XML 1.0 forbids most C0 control chars (e.g. pasted \v or \x01): strip them or Word refuses the file.
+const esc = (s) => String(s).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const TW = 20, EMU = 12700;
 /** pages: [{width,height, png:Uint8Array, ops}] */
 export function buildDocx(pages, title = 'Invoice') {

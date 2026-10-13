@@ -1,0 +1,65 @@
+[
+ {
+  "template": "classic-gst-a4",
+  "kind": "pdf",
+  "page": "595x842",
+  "tax": "CGST+SGST 33",
+  "items": 3,
+  "result": "PASS",
+  "note": "₹1,46,673.42"
+ },
+ {
+  "template": "minimal-service-a4",
+  "kind": "pdf",
+  "page": "595x842",
+  "tax": "IGST 29→27",
+  "items": 2,
+  "result": "PASS",
+  "note": "₹1,26,733.33"
+ },
+ {
+  "template": "colour-landscape-a4",
+  "kind": "pdf",
+  "page": "842x595",
+  "tax": "IGST 27→07",
+  "items": 4,
+  "result": "PASS",
+  "note": "₹49,180.00"
+ },
+ {
+  "template": "letter-modern",
+  "kind": "pdf",
+  "page": "612x792",
+  "tax": "CGST+SGST 27",
+  "items": 3,
+  "result": "PASS",
+  "note": "₹40,148.22"
+ },
+ {
+  "template": "docx-tax-table",
+  "kind": "docx",
+  "page": "595x842",
+  "tax": "CGST+SGST 29",
+  "items": 3,
+  "result": "PASS",
+  "note": "₹3,95,298.82"
+ },
+ {
+  "template": "docx-simple",
+  "kind": "docx",
+  "page": "595x842",
+  "tax": "IGST 33→32",
+  "items": 2,
+  "result": "PASS",
+  "note": "₹76,700.00"
+ },
+ {
+  "template": "history",
+  "kind": "-",
+  "page": "-",
+  "tax": "-",
+  "items": "-",
+  "result": "PASS",
+  "note": "6 invoices listed"
+ }
+]
